@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import axios from 'axios';
-import Tippy from '@tippyjs/react';
-import 'tippy.js/dist/tippy.css'; 
 
 const BulkImport: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
@@ -33,10 +31,9 @@ const BulkImport: React.FC = () => {
 
   return (
     <div className="bg-white shadow-md rounded-lg p-6 max-w-md ml-0 mt-8">
-      <h2 className="text-1xl font-bold mb-4 text-gray-800">Importar desde archivo</h2>
+      <h2 className="text-1xl font-bold mb-4 text-gray-800">Import from CSV</h2>
       <div className="mb-4">
         <input
-          id="file-upload"
           type="file"
           accept=".csv"
           onChange={handleFileChange}
@@ -47,11 +44,10 @@ const BulkImport: React.FC = () => {
         onClick={handleUpload}
         className="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition duration-300"
       >
-        Subir archivo
+        Upload CSV
       </button>
     </div>
   );
-  
 };
 
 export default BulkImport;

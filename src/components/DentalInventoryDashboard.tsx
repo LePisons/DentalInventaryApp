@@ -9,6 +9,8 @@ import { SearchBar } from './SearchBar';
 import { InventoryTable } from './InventoryTable';
 import { InventoryItem, HistoryRecord } from '../types';
 import InventoryStatsChart from './InventoryStatsChart';
+import BulkImport from './BulkImport'; // Add this import
+
 
 const DentalInventoryDashboard: React.FC = () => {
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
@@ -78,6 +80,8 @@ const DentalInventoryDashboard: React.FC = () => {
           onBulkAction={handleBulkAction}
         />
       </div>
+      
+      <BulkImport />
 
       <AddNewItem onItemAdded={fetchInventoryItems} />
 
