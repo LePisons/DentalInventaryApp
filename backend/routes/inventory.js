@@ -67,17 +67,20 @@ router.post('/bulk-delete', async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
-
-// Actualizar un ítem
 router.put('/:id', async (req, res) => {
   try {
     const item = await InventoryItem.findByPk(req.params.id);
     if (!item) {
       return res.status(404).json({ error: 'Item not found' });
     }
-    await item.update(req.body);
-    await InventoryHistory.create({ itemId: item.id, action: 'updated', quantity: item.quantity });
-    res.status(200).json(item);
+    const updatedItem = await item.update(req.body);
+    await InventoryHistory.create({ 
+      itemId: item.id, 
+      action: 'updated', 
+      quantity: updatedItem.quantity,
+      lowStockThreshold: updatedItem.lowStockThreshold
+    });
+    res.status(200).json(updatedItem);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
