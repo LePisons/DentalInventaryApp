@@ -25,6 +25,7 @@ export const AddNewItem: React.FC<AddNewItemProps> = ({ onItemAdded }) => {
 
   const handleAddItem = async () => {
     try {
+      console.log('Sending new item data:', newItem); // Add this line
       const response = await axios.post('http://localhost:3001/api/inventory', newItem);
       console.log('New item added:', response.data);
       setNewItem({ name: '', category: '', quantity: 0, unit: '', lowStockThreshold: 0 });

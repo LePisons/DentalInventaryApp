@@ -48,7 +48,9 @@ router.get('/history', async (req, res) => {
 // Crear un nuevo ítem
 router.post('/', async (req, res) => {
   try {
+    console.log('Received item data:', req.body); // Add this line
     const item = await InventoryItem.create(req.body);
+    console.log('Created item:', item.toJSON()); // Add this line
     await InventoryHistory.create({ 
       itemId: item.id, 
       action: 'created', 
@@ -57,6 +59,7 @@ router.post('/', async (req, res) => {
     });
     res.status(201).json(item);
   } catch (error) {
+    console.error('Error creating item:', error); // Modify this line
     res.status(500).json({ error: error.message });
   }
 });
