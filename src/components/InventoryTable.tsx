@@ -48,7 +48,10 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
 
   const handleUpdateItem = async (id: number, field: keyof InventoryItem, value: string | number) => {
     try {
-      const updatedItem = { ...inventoryItems.find(item => item.id === id), [field]: value };
+      const item = inventoryItems.find(item => item.id === id);
+      if (!item) return;
+  
+      const updatedItem = { ...item, [field]: value };
       const response = await axios.put(`http://localhost:3001/api/inventory/${id}`, updatedItem);
       onUpdateItem(response.data);
     } catch (error) {
@@ -123,7 +126,8 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
         </thead>
         <tbody className="bg-white divide-y divide-gray-200">
           {filteredAndSortedItems.map((item) => (
-            <tr key={item.id} className={item.quantity <= item.lowStockThreshold ? 'bg-red-100' : ''}>
+            <tr key={item.id} 
+            className={`${item.quantity <= item.lowStockThreshold ? 'bg-red-200' : ''} hover:bg-gray-100 transition-colors duration-200`}>
               <td className="px-6 py-4 whitespace-nowrap">
                 <input
                   type="checkbox"
@@ -161,13 +165,17 @@ export const InventoryTable: React.FC<InventoryTableProps> = ({
               </td>
               <td className="px-6 py-4 whitespace-nowrap">
                 {item.quantity <= item.lowStockThreshold ? (
-                  <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
-                    Low Stock
-                  </span>
+                <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                Low Stock
+                </span>
+                 ) : item.quantity <= item.lowStockThreshold * 1.5 ? (
+                <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                Medium Stock
+                </span>
                 ) : (
-                  <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                    In Stock
-                  </span>
+                <span className="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                In Stock
+                </span>
                 )}
               </td>
               <td className="px-6 py-4 whitespace-nowrap">

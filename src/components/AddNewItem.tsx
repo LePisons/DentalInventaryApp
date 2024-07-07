@@ -17,12 +17,16 @@ export const AddNewItem: React.FC<AddNewItemProps> = ({ onItemAdded }) => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setNewItem(prev => ({ ...prev, [name]: name === 'quantity' || name === 'lowStockThreshold' ? parseInt(value) : value }));
+    setNewItem(prev => ({ 
+      ...prev, 
+      [name]: name === 'quantity' || name === 'lowStockThreshold' ? parseInt(value) || 0 : value 
+    }));
   };
 
   const handleAddItem = async () => {
     try {
-      await axios.post('http://localhost:3001/api/inventory', newItem);
+      const response = await axios.post('http://localhost:3001/api/inventory', newItem);
+      console.log('New item added:', response.data);
       setNewItem({ name: '', category: '', quantity: 0, unit: '', lowStockThreshold: 0 });
       onItemAdded();
     } catch (error) {

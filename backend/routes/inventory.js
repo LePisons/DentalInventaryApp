@@ -49,7 +49,12 @@ router.get('/history', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     const item = await InventoryItem.create(req.body);
-    await InventoryHistory.create({ itemId: item.id, action: 'created', quantity: item.quantity });
+    await InventoryHistory.create({ 
+      itemId: item.id, 
+      action: 'created', 
+      quantity: item.quantity,
+      lowStockThreshold: item.lowStockThreshold
+    });
     res.status(201).json(item);
   } catch (error) {
     res.status(500).json({ error: error.message });
