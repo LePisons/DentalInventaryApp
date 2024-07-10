@@ -21,7 +21,7 @@ const InventoryHistory: React.FC = () => {
   return (
     <div className="inventory-history">
       <h2 className="text-2xl font-bold mb-4">Historial de Inventario</h2>
-      <table className="min-w-full bg-white">
+      <table className="min-w-full bg-bg-primary">
         <thead>
           <tr>
             <th className="px-6 py-3 border-b-2 border-gray-300 text-left text-xs leading-4 font-medium text-gray-500 uppercase tracking-wider">ID</th>

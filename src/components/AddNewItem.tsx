@@ -36,7 +36,7 @@ export const AddNewItem: React.FC<AddNewItemProps> = ({ onItemAdded }) => {
   };
 
   return (
-    <div className="bg-white rounded shadow p-4 mb-6">
+    <div className="bg-light rounded shadow p-4 mb-6">
       <h2 className="text-lg font-semibold mb-2">Add New Item</h2>
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <input

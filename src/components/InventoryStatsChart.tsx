@@ -6,28 +6,6 @@ interface InventoryStatsChartProps {
   inventoryItems: InventoryItem[];
 }
 
-const CustomXAxisTick: React.FC<any> = ({ x, y, payload }) => {
-  return (
-    <g transform={`translate(${x},${y})`}>
-      <text 
-        x={0} 
-        y={0} 
-        dy={16} 
-        textAnchor="end" 
-        fill="#666" 
-        transform="rotate(-45)"
-        style={{ fontSize: '12px' }}
-      >
-        {payload.value}
-      </text>
-    </g>
-  );
-};
-
-// Explicitly set props to silence warnings
-const CustomXAxis = (props: any) => <XAxis {...props} />;
-const CustomYAxis = (props: any) => <YAxis {...props} />;
-
 export const InventoryStatsChart: React.FC<InventoryStatsChartProps> = ({ inventoryItems }) => {
   const chartData = Object.entries(
     inventoryItems.reduce((acc, item) => {
@@ -37,32 +15,30 @@ export const InventoryStatsChart: React.FC<InventoryStatsChartProps> = ({ invent
   ).map(([category, quantity]) => ({ category, quantity }));
 
   return (
-    <div className="h-64 w-full">
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart
-          data={chartData}
-          margin={{
-            top: 20,
-            right: 30,
-            left: 20,
-            bottom: 60,
-          }}
-        >
-          <CartesianGrid strokeDasharray="3 3" />
-          <CustomXAxis 
-            dataKey="category"
-            interval={0}
-            tick={<CustomXAxisTick />}
-            height={60}
-          />
-          <CustomYAxis
-            tick={{ fontSize: 12 }}
-          />
-          <Tooltip />
-          <Legend />
-          <Bar dataKey="quantity" fill="#8884d8" />
-        </BarChart>
-      </ResponsiveContainer>
+    <div className="bg-white rounded-lg shadow-md p-6">
+      <h2 className="text-xl font-semibold mb-4 text-primary">Inventario por Categoría</h2>
+      <div className="w-full h-64 md:h-80">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart
+            data={chartData}
+            margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
+          >
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis 
+              dataKey="category" 
+              angle={-45} 
+              textAnchor="end" 
+              interval={0} 
+              height={60} 
+              tick={{ fontSize: 12 }}
+            />
+            <YAxis tick={{ fontSize: 12 }} />
+            <Tooltip />
+            <Legend />
+            <Bar dataKey="quantity" fill="#007bff" />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 };
