@@ -1,13 +1,12 @@
-// backend/server.js
 const express = require('express');
 const nodemailer = require('nodemailer');
 const cors = require('cors');
-const { sequelize } = require('./models'); // Importa Sequelize para conectar con la base de datos
-const inventoryRoutes = require('./routes/inventory'); // Importa las rutas de inventario
-const app = express();
-const port = 3001;
-app.use(express.json());
+const { sequelize } = require('./models');
+const inventoryRoutes = require('./routes/inventory');
+require('dotenv').config();
 
+const app = express();
+const port = process.env.PORT || 3001;
 
 app.use(cors());
 app.use(express.json());
@@ -42,12 +41,24 @@ app.post('/api/low-stock-alert', (req, res) => {
   res.status(200).send('Low stock alert sent');
 });
 
-// Usar las rutas de inventario
 app.use('/api/inventory', inventoryRoutes);
 
-app.listen(port, async () => {
-  console.log(`Server running at http://localhost:${port}`);
-  await sequelize.authenticate();
-  await sequelize.sync({ alter: true }); // Esto sincroniza todos los modelos, asegúrate de usar { alter: true } en producción.
-  console.log('Database connected and synced!');
-});
+const startServer = async () => {
+  try {
+    await sequelize.authenticate();
+    console.log('Database connected successfully.');
+    
+    if (process.env.NODE_ENV !== 'production') {
+      await sequelize.sync({ alter: true });
+      console.log('Database synced in development mode.');
+    }
+
+    app.listen(port, () => {
+      console.log(`Server running at http://localhost:${port}`);
+    });
+  } catch (error) {
+    console.error('Unable to start the server:', error);
+  }
+};
+
+startServer();

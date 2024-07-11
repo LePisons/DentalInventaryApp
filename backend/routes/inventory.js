@@ -7,9 +7,7 @@ const multer = require('multer');
 const upload = multer({ dest: 'uploads/' });
 const { Op } = require('sequelize');
 
-
-
-// Obtener todos los ítems con opciones de búsqueda y filtrado
+// Get all items with search and filter options
 router.get('/', async (req, res) => {
   const { category, search } = req.query;
   const where = {};
@@ -28,7 +26,8 @@ router.get('/', async (req, res) => {
     const items = await InventoryItem.findAll({ where });
     res.status(200).json(items);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error('Error fetching inventory items:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -45,84 +44,137 @@ router.get('/history', async (req, res) => {
   }
 });
 
-// Crear un nuevo ítem
+// Create a new item
 router.post('/', async (req, res) => {
+  const t = await sequelize.transaction();
   try {
-    console.log('Received item data:', req.body); // Add this line
-    const item = await InventoryItem.create(req.body);
-    console.log('Created item:', item.toJSON()); // Add this line
-    await InventoryHistory.create({ 
-      itemId: item.id, 
-      action: 'created', 
-      quantity: item.quantity,
-      lowStockThreshold: item.lowStockThreshold
-    });
+    console.log('Received item data:', req.body);
+    const item = await InventoryItem.create(req.body, { transaction: t });
+    console.log('Created item:', item.toJSON());
+    
+    await InventoryHistory.create({
+      itemId: item.id,
+      itemName: item.name,
+      action: 'created',
+      quantity: item.quantity
+    }, { transaction: t });
+
+    await t.commit();
     res.status(201).json(item);
   } catch (error) {
-    console.error('Error creating item:', error); // Modify this line
-    res.status(500).json({ error: error.message });
+    await t.rollback();
+    console.error('Error creating item:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// Bulk delete inventory items using POST
+// Bulk delete inventory items
 router.post('/bulk-delete', async (req, res) => {
   const { ids } = req.body;
+  const t = await sequelize.transaction();
 
   try {
-    await InventoryItem.destroy({ where: { id: ids } });
+    const items = await InventoryItem.findAll({ where: { id: ids } });
+    await InventoryItem.destroy({ where: { id: ids }, transaction: t });
+
+    await Promise.all(items.map(item => 
+      InventoryHistory.create({
+        itemId: item.id,
+        itemName: item.name,
+        action: 'bulk_deleted',
+        quantity: 0
+      }, { transaction: t })
+    ));
+
+    await t.commit();
     res.status(200).json({ message: 'Bulk delete successful' });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    await t.rollback();
+    console.error('Bulk delete error:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+// Update an item
 router.put('/:id', async (req, res) => {
+  const t = await sequelize.transaction();
   try {
-    const item = await InventoryItem.findByPk(req.params.id);
+    const item = await InventoryItem.findByPk(req.params.id, { transaction: t });
     if (!item) {
+      await t.rollback();
       return res.status(404).json({ error: 'Item not found' });
     }
-    const updatedItem = await item.update(req.body);
-    await InventoryHistory.create({ 
-      itemId: item.id, 
-      action: 'updated', 
-      quantity: updatedItem.quantity,
-      lowStockThreshold: updatedItem.lowStockThreshold
-    });
+    const updatedItem = await item.update(req.body, { transaction: t });
+    await InventoryHistory.create({
+      itemId: item.id,
+      itemName: updatedItem.name,
+      action: 'updated',
+      quantity: updatedItem.quantity
+    }, { transaction: t });
+
+    await t.commit();
     res.status(200).json(updatedItem);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    await t.rollback();
+    console.error('Error updating item:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// Eliminar un ítem
+// Delete an item
 router.delete('/:id', async (req, res) => {
+  const t = await sequelize.transaction();
   try {
-    const item = await InventoryItem.findByPk(req.params.id);
+    const item = await InventoryItem.findByPk(req.params.id, { transaction: t });
     if (!item) {
+      await t.rollback();
       return res.status(404).json({ error: 'Item not found' });
     }
-    await item.destroy();
-    await InventoryHistory.create({ itemId: item.id, action: 'deleted', quantity: 0 });
+    await item.destroy({ transaction: t });
+    await InventoryHistory.create({
+      itemId: item.id,
+      itemName: item.name,
+      action: 'deleted',
+      quantity: 0
+    }, { transaction: t });
+
+    await t.commit();
     res.status(204).end();
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    await t.rollback();
+    console.error('Error deleting item:', error);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// Bulk import inventory items from CSV using multer
+// Bulk import inventory items from CSV
 router.post('/bulk-import', upload.single('file'), async (req, res) => {
   const filePath = req.file.path;
   const results = [];
+  const t = await sequelize.transaction();
 
   fs.createReadStream(filePath)
     .pipe(csv())
     .on('data', (data) => results.push(data))
     .on('end', async () => {
       try {
-        await InventoryItem.bulkCreate(results);
+        const createdItems = await InventoryItem.bulkCreate(results, { transaction: t });
+        
+        await Promise.all(createdItems.map(item => 
+          InventoryHistory.create({
+            itemId: item.id,
+            itemName: item.name,
+            action: 'bulk_imported',
+            quantity: item.quantity
+          }, { transaction: t })
+        ));
+
+        await t.commit();
         res.status(200).json({ message: 'Bulk import successful' });
       } catch (error) {
-        res.status(500).json({ error: error.message });
+        await t.rollback();
+        console.error('Bulk import error:', error);
+        res.status(500).json({ error: 'Internal server error' });
       } finally {
         fs.unlinkSync(filePath); // Clean up the uploaded file
       }
@@ -132,6 +184,7 @@ router.post('/bulk-import', upload.single('file'), async (req, res) => {
 // Bulk update inventory items
 router.post('/bulk-update', async (req, res) => {
   const { items, bulkUpdateField, bulkUpdateValue } = req.body;
+  const t = await sequelize.transaction();
   
   if (!items || !Array.isArray(items) || items.length === 0) {
     return res.status(400).json({ error: 'Invalid or empty items array' });
@@ -139,29 +192,32 @@ router.post('/bulk-update', async (req, res) => {
 
   try {
     const updatePromises = items.map(id => 
-      InventoryItem.update({ [bulkUpdateField]: bulkUpdateValue }, { where: { id } })
+      InventoryItem.update({ [bulkUpdateField]: bulkUpdateValue }, { where: { id }, transaction: t })
     );
 
     await Promise.all(updatePromises);
 
-    // Log the update in InventoryHistory
-    await Promise.all(items.map(id => 
-      InventoryHistory.create({ 
-        itemId: id, 
-        action: 'bulk_updated', 
-        quantity: bulkUpdateField === 'quantity' ? bulkUpdateValue : 0,
-        lowStockThreshold: items.lowStockThreshold 
-      })
+    const updatedItems = await InventoryItem.findAll({ where: { id: items }, transaction: t });
+
+    await Promise.all(updatedItems.map(item => 
+      InventoryHistory.create({
+        itemId: item.id,
+        itemName: item.name,
+        action: 'bulk_updated',
+        quantity: bulkUpdateField === 'quantity' ? bulkUpdateValue : item.quantity
+      }, { transaction: t })
     ));
 
+    await t.commit();
     res.status(200).json({ message: 'Bulk update successful' });
   } catch (error) {
+    await t.rollback();
     console.error('Bulk update error:', error);
-    res.status(500).json({ error: 'Bulk update failed', details: error.message });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-// New route to get the last 10 actions
+// Get the last 10 actions
 router.get('/history/last10', async (req, res) => {
   try {
     const history = await InventoryHistory.findAll({

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axios, { isAxiosError } from 'axios';
 import { InventoryStats } from './InventoryStats';
 import { LastActions } from './LastActions';
 import { BulkActions } from './BulkActions';
@@ -9,9 +9,10 @@ import { SearchBar } from './SearchBar';
 import { InventoryTable } from './InventoryTable';
 import { InventoryItem, HistoryRecord } from '../types';
 import InventoryStatsChart from './InventoryStatsChart';
-import BulkImport from './BulkImport'; // Add this import
-import ColorScheme from './ColorScheme'
+import BulkImport from './BulkImport';
+import ColorScheme from './ColorScheme';
 
+const API_URL = process.env.REACT_APP_API_URL;
 
 const DentalInventoryDashboard: React.FC = () => {
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
@@ -19,6 +20,7 @@ const DentalInventoryDashboard: React.FC = () => {
   const [categoryFilter, setCategoryFilter] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetchInventoryItems();
@@ -27,21 +29,29 @@ const DentalInventoryDashboard: React.FC = () => {
 
   const fetchInventoryItems = async () => {
     try {
-      const response = await axios.get('http://localhost:3001/api/inventory', {
+      const response = await axios.get(`${API_URL}/inventory`, {
         params: { category: categoryFilter, search: searchTerm }
       });
       setInventoryItems(response.data);
+      setError(null);
     } catch (error) {
       console.error('Error fetching inventory items:', error);
+      setError('Failed to fetch inventory items. Please check your connection and try again.');
     }
   };
 
   const fetchLastActions = async () => {
     try {
-      const response = await axios.get('http://localhost:3001/api/inventory/history/last10');
+      const response = await axios.get(`${API_URL}/inventory/history/last10`);
       setLastActions(response.data);
+      setError(null);
     } catch (error) {
       console.error('Error fetching last actions:', error);
+      if (axios.isAxiosError(error)) {
+        setError(error.response?.data?.error || error.message);
+      } else {
+        setError('An unexpected error occurred while fetching recent actions.');
+      }
     }
   };
 
@@ -65,6 +75,13 @@ const DentalInventoryDashboard: React.FC = () => {
         <h1 className="text-3xl font-bold mb-6 text-primary text-center">
           Inventario Clínica Newen 2024
         </h1>
+
+        {error && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+            <strong className="font-bold">Error:</strong>
+            <span className="block sm:inline"> {error}</span>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
           <div className="lg:col-span-2">
