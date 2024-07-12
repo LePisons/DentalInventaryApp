@@ -10,6 +10,7 @@ export interface InventoryItem {
   export interface HistoryRecord {
     id: number;
     itemId: number;
+    itemName: string;  // Add this line
     action: string;
     quantity: number;
     createdAt: string;

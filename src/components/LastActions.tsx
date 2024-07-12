@@ -7,18 +7,24 @@ interface LastActionsProps {
 
 export const LastActions: React.FC<LastActionsProps> = ({ lastActions }) => (
   <div className="bg-white p-4 rounded shadow">
-    <h2 className="text-sm font-medium text-gray-500 mb-2">Last 10 Actions</h2>
+    <h2 className="text-lg font-semibold text-gray-700 mb-3">Last 10 Actions</h2>
     {lastActions.length > 0 ? (
-      <ul className="text-sm">
+      <ul className="space-y-2">
         {lastActions.map((action, index) => (
-          <li key={index} className="mb-1">
-            {action.action} - Item ID: {action.itemId} - Quantity: {action.quantity} - {new Date(action.createdAt).toLocaleString()}
+          <li key={index} className="bg-gray-50 p-2 rounded">
+            <span className="font-medium">{action.action}</span>
+            <span className="mx-1">-</span>
+            <span className="text-blue-600">{action.itemName}</span>
+            <span className="mx-1">-</span>
+            <span>Quantity: {action.quantity}</span>
+            <div className="text-xs text-gray-500 mt-1">
+              {new Date(action.createdAt).toLocaleString()}
+            </div>
           </li>
         ))}
       </ul>
     ) : (
-      <p>No recent actions recorded.</p>
+      <p className="text-gray-500">No recent actions recorded.</p>
     )}
   </div>
-
 );

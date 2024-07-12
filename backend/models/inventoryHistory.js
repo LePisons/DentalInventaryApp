@@ -1,4 +1,3 @@
-// backend/models/inventoryHistory.js
 module.exports = (sequelize, DataTypes) => {
   const InventoryHistory = sequelize.define('InventoryHistory', {
     itemId: {
@@ -22,6 +21,13 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: DataTypes.NOW
     }
   });
+
+  InventoryHistory.associate = function(models) {
+    InventoryHistory.belongsTo(models.InventoryItem, {
+      foreignKey: 'itemId',
+      as: 'item'
+    });
+  };
 
   return InventoryHistory;
 };

@@ -217,14 +217,30 @@ router.post('/bulk-update', async (req, res) => {
   }
 });
 
+
 // Get the last 10 actions
+
 router.get('/history/last10', async (req, res) => {
   try {
     const history = await InventoryHistory.findAll({
+      include: [{
+        model: InventoryItem,
+        as: 'item',
+        attributes: ['name'],
+      }],
       order: [['createdAt', 'DESC']],
       limit: 10
     });
-    res.json(history);
+
+    const formattedHistory = history.map(record => ({
+      id: record.id,
+      itemName: record.item ? record.item.name : record.itemName,
+      action: record.action,
+      quantity: record.quantity,
+      createdAt: record.createdAt
+    }));
+
+    res.json(formattedHistory);
   } catch (error) {
     console.error('Error fetching last 10 actions:', error);
     res.status(500).json({ error: 'Internal server error' });

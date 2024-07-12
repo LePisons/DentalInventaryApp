@@ -6,8 +6,16 @@ module.exports = (sequelize, DataTypes) => {
     unit: DataTypes.STRING,
     lowStockThreshold: {
       type: DataTypes.INTEGER,
-      allowNull: true // Change this to false if you want to make it required
+      allowNull: true
     }
   });
+
+  InventoryItem.associate = function(models) {
+    InventoryItem.hasMany(models.InventoryHistory, {
+      foreignKey: 'itemId',
+      as: 'history'
+    });
+  };
+
   return InventoryItem;
 };
