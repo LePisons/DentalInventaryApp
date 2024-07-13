@@ -10,7 +10,7 @@ import { InventoryTable } from './InventoryTable';
 import { InventoryItem, HistoryRecord } from '../types';
 import InventoryStatsChart from './InventoryStatsChart';
 import BulkImport from './BulkImport';
-import ColorScheme from './ColorScheme';
+import StockLevelOverview from './StockLevelOverview';
 
 const API_URL = process.env.REACT_APP_API_URL;
 
@@ -84,17 +84,27 @@ const DentalInventoryDashboard: React.FC = () => {
     )}
 
 <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
-      <div className="xl:col-span-2 bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-xl font-semibold mb-4 text-gray-800">Inventario por Categoría</h2>
-        <InventoryStatsChart inventoryItems={inventoryItems} />
+  
+  <div className="xl:col-span-2 space-y-6">
+    
+    <div className="bg-white rounded-lg shadow-md p-6">
+      <h2 className="text-xl font-semibold mb-4 text-gray-800">Inventario por Categoría</h2>
+      <InventoryStatsChart inventoryItems={inventoryItems} />
+    </div>
+
+    <div className="bg-white rounded-lg shadow-md p-6">
+      <h2 className="text-xl font-semibold mb-4 text-gray-800">Stock Level Overview</h2>
+      <StockLevelOverview inventoryItems={inventoryItems} />
+    </div>
+    
+  </div>
+
+  <div className="bg-white rounded-lg shadow-md p-6 flex-grow">
+      <div className="h-[calc(100%-2rem)] overflow-auto">
+        <LastActions lastActions={lastActions} />
       </div>
-
-      <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold mb-4 text-gray-800">Últimas Acciones</h2>
-          <LastActions lastActions={lastActions} />
-        </div>
-
-        </div>
+    </div>
+    </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
           <div className="bg-white rounded-lg shadow-md p-4">
@@ -108,9 +118,8 @@ const DentalInventoryDashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div className="grid grid-cols-1 md:grid-cols-1 gap-4 mb-4">
           <CategoryFilter onCategoryChange={setCategoryFilter} />
-          <SearchBar onSearch={setSearchTerm} />
         </div>
 
         <div className="bg-white rounded-lg shadow-md p-4 mb-4">

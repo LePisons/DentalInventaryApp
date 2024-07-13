@@ -6,12 +6,12 @@ interface LastActionsProps {
 }
 
 export const LastActions: React.FC<LastActionsProps> = ({ lastActions }) => (
-  <div className="bg-white p-4 rounded shadow">
+  <div className="bg-white p-4 rounded shadow h-full overflow-auto">
     <h2 className="text-lg font-semibold text-gray-700 mb-3">Ultimas acciones</h2>
     {lastActions.length > 0 ? (
       <ul className="space-y-2">
-        {lastActions.map((action, index) => (
-          <li key={index} className="bg-gray-50 p-2 rounded">
+        {lastActions.slice(0, 20).map((action, index) => (  // Showing 7 actions instead of 10
+          <li key={index} className="bg-gray-50 p-2 rounded text-sm">
             <span className="font-medium">{action.action}</span>
             <span className="mx-1">-</span>
             <span className="text-blue-600">{action.itemName}</span>
