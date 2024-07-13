@@ -7,7 +7,7 @@ interface LastActionsProps {
 
 export const LastActions: React.FC<LastActionsProps> = ({ lastActions }) => (
   <div className="bg-white p-4 rounded shadow">
-    <h2 className="text-lg font-semibold text-gray-700 mb-3">Last 10 Actions</h2>
+    <h2 className="text-lg font-semibold text-gray-700 mb-3">Ultimas acciones</h2>
     {lastActions.length > 0 ? (
       <ul className="space-y-2">
         {lastActions.map((action, index) => (

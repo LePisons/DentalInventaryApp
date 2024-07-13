@@ -71,26 +71,29 @@ const DentalInventoryDashboard: React.FC = () => {
 
   return (
     <div className="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
-      <div className="container mx-auto px-4 py-6">
-        <h1 className="text-3xl font-bold mb-6 text-primary text-center">
-          Inventario Clínica Newen 2024
-        </h1>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <h1 className="text-3xl font-bold mb-8 text-primary text-center">
+        Inventario Clínica Newen 2024
+      </h1>
 
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-            <strong className="font-bold">Error:</strong>
-            <span className="block sm:inline"> {error}</span>
-          </div>
-        )}
+      {error && (
+      <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-6" role="alert">
+        <strong className="font-bold">Error:</strong>
+        <span className="block sm:inline"> {error}</span>
+      </div>
+    )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
-          <div className="lg:col-span-2">
-            <InventoryStatsChart inventoryItems={inventoryItems} />
-          </div>
-          <div className="lg:col-span-1 grid grid-cols-1 gap-4">
-            <InventoryStats inventoryItems={inventoryItems} />
-            <LastActions lastActions={lastActions} />
-          </div>
+<div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-6">
+      <div className="xl:col-span-2 bg-white rounded-lg shadow-md p-6">
+        <h2 className="text-xl font-semibold mb-4 text-gray-800">Inventario por Categoría</h2>
+        <InventoryStatsChart inventoryItems={inventoryItems} />
+      </div>
+
+      <div className="bg-white rounded-lg shadow-md p-6">
+          <h2 className="text-xl font-semibold mb-4 text-gray-800">Últimas Acciones</h2>
+          <LastActions lastActions={lastActions} />
+        </div>
+
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
